@@ -3,200 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reliability Quest: Legend of Uptime</title>
+    <title>Reliability Quest: Inventory Edition</title>
     <style>
         :root {
-            --bg-color: #1a1a1d;
-            --panel-bg: #2d2d30;
-            --accent-gold: #c5a059;
-            --accent-red: #a94442;
-            --accent-green: #4e9a53;
-            --text-main: #e0e0e0;
-            --text-muted: #a0a0a0;
-            --font-header: 'Courier New', Courier, monospace; /* Fallback for fantasy feel */
-            --font-body: system-ui, -apple-system, sans-serif;
+            --bg-color: #0a0a0a;
+            --parchment: #d4c5a4;
+            --parchment-dark: #a89f81;
+            --text-ink: #2b1d0e;
+            --accent-gold: #ffcc00;
+            --magic-cyan: #00ffcc;
+            --blood-red: #8a0303;
+            --font-header: 'Georgia', serif;
+            --font-body: 'Courier New', monospace;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; user-select: none; }
 
         body {
             margin: 0;
             padding: 0;
             background-color: var(--bg-color);
-            color: var(--text-main);
+            color: var(--text-ink);
             font-family: var(--font-body);
             display: flex;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
+            background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+        }
+
+        /* RETRO CRT EFFECT OVERLAY */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
         }
 
         .game-container {
             width: 100%;
-            max-width: 800px;
-            background: var(--panel-bg);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 900px;
+            height: 90vh;
+            background: var(--parchment);
+            border: 8px double #4a3c2a;
+            box-shadow: 0 0 50px rgba(0,255,204, 0.1);
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
+            z-index: 1;
         }
 
-        /* Header */
+        /* HEADER */
         header {
-            background: #000;
+            background: #2b1d0e;
+            color: var(--parchment);
             padding: 1rem;
             text-align: center;
-            border-bottom: 3px solid var(--accent-gold);
+            border-bottom: 4px solid #856f48;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         
-        h1 { margin: 0; font-family: var(--font-header); color: var(--accent-gold); text-transform: uppercase; letter-spacing: 2px; font-size: 1.5rem; }
-        h2 { font-family: var(--font-header); color: var(--accent-gold); margin-top: 0;}
+        h1 { 
+            margin: 0; 
+            font-family: var(--font-header); 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            color: var(--accent-gold);
+            text-shadow: 2px 2px 0px #000;
+        }
 
-        /* Screens */
+        /* SCREENS */
         .screen {
             padding: 2rem;
             flex: 1;
-            display: none; /* Hidden by default */
+            display: none;
             flex-direction: column;
-            animation: fadeIn 0.5s ease;
+            overflow-y: auto;
         }
-        
         .screen.active { display: flex; }
 
-        /* Class Selection */
+        /* CLASS SELECTION */
         .class-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
         }
 
         .class-card {
-            border: 1px solid var(--text-muted);
-            padding: 1rem;
-            border-radius: 8px;
+            background: #e6dabb;
+            border: 2px solid #6e5a3e;
+            padding: 10px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(255,255,255,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+            position: relative;
         }
 
         .class-card:hover {
-            border-color: var(--accent-gold);
-            background: rgba(197, 160, 89, 0.1);
-            transform: translateY(-2px);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: var(--text-ink);
         }
 
-        .class-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
-        .class-title { font-weight: bold; color: var(--accent-gold); font-family: var(--font-header); }
-        .class-desc { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; }
-
-        /* Gameplay UI */
-        .stats-bar {
-            display: flex;
-            justify-content: space-between;
-            padding: 1rem;
-            background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid var(--text-muted);
-            font-family: var(--font-header);
-        }
-
-        .stat-box span { font-weight: bold; color: var(--accent-gold); }
-
-        .narrative-box {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 1rem;
-            padding-right: 0.5rem;
-            min-height: 200px;
-        }
-
-        .story-text { font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem; }
-        .log-entry { font-size: 0.9rem; padding: 0.5rem; border-left: 3px solid var(--text-muted); margin-bottom: 0.5rem; background: rgba(0,0,0,0.2); }
-        .log-entry.success { border-color: var(--accent-green); }
-        .log-entry.fail { border-color: var(--accent-red); }
-
-        .choice-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        button.choice-btn {
-            background: transparent;
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            padding: 1rem;
-            font-family: var(--font-header);
-            font-size: 1rem;
-            cursor: pointer;
-            text-align: left;
-            transition: 0.2s;
-        }
-
-        button.choice-btn:hover {
-            background: var(--accent-gold);
-            color: #000;
-        }
-
-        button.choice-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .dice-area {
-            text-align: center;
-            margin: 1rem 0;
-            height: 60px;
+        .card-image-slot {
+            width: 100%;
+            height: 150px;
+            background: #444;
+            margin-bottom: 10px;
+            border: 2px solid #2b1d0e;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: var(--accent-gold);
-        }
-
-        .dice-roll-anim {
-            animation: shake 0.5s infinite;
-        }
-
-        /* End Screen */
-        .result-card {
-            text-align: center;
-            padding: 2rem;
-            border: 2px solid var(--accent-gold);
-            border-radius: 10px;
+            overflow: hidden;
         }
         
-        .badge {
+        .card-image-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-image-slot.missing-img img { display: none; }
+        .card-image-slot.missing-img::after {
+            content: '⚔️'; 
             font-size: 3rem;
-            margin: 1rem 0;
         }
 
-        .btn-primary {
-            background: var(--accent-gold);
-            color: #000;
-            border: none;
-            padding: 1rem 2rem;
-            font-weight: bold;
-            font-size: 1.2rem;
+        .class-name { font-family: var(--font-header); font-weight: bold; font-size: 1.2rem; border-bottom: 1px solid #6e5a3e; margin-bottom: 5px; padding-bottom: 5px; }
+        .class-role { color: #666; font-size: 0.8rem; font-style: italic; }
+
+        /* MAP UI */
+        .map-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            align-content: center;
+            height: 100%;
+        }
+
+        .map-zone {
+            background: #2b1d0e; 
+            border: 4px outset #6e5a3e;
+            color: var(--parchment);
+            text-align: center;
             cursor: pointer;
-            margin-top: 2rem;
             font-family: var(--font-header);
+            position: relative;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; 
+            align-items: center;
+            min-height: 200px;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            text-shadow: 2px 2px 4px #000; 
+        }
+        
+        .map-zone-content {
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            width: 100%;
+            padding: 1rem;
+            padding-top: 3rem;
         }
 
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes shake {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(5deg); }
-            75% { transform: rotate(-5deg); }
-            100% { transform: rotate(0deg); }
+        .map-zone:hover { transform: scale(1.03); border-color: var(--accent-gold); }
+        .map-zone h3 { margin: 0; color: var(--accent-gold); text-transform: uppercase; font-size: 1.4rem; }
+        .map-zone .icon { font-size: 3rem; margin-bottom: 10px; display: none; } 
+
+        /* Fallback for missing zone images */
+        .map-zone.missing-zone-img { background: #4a3c2a; justify-content: center; }
+        .map-zone.missing-zone-img .icon { display: block; }
+        .map-zone.missing-zone-img .map-zone-content { background: none; padding: 1rem; padding-top: 0; }
+
+        .map-zone.completed { filter: grayscale(1); opacity: 0.6; border-style: inset; cursor: default; pointer-events: none; }
+        .map-zone.completed::after {
+            content: "CLEARED";
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            border: 3px solid var(--magic-cyan);
+            color: var(--magic-cyan);
+            padding: 0.5rem;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 0 #000;
+            background: rgba(0,0,0,0.8);
+            z-index: 10;
         }
 
-        /* Mobile Tweaks */
+        /* GAMEPLAY UI & INVENTORY */
+        .hud-bar {
+            display: flex;
+            justify-content: space-between;
+            background: #2b1d0e;
+            color: var(--parchment);
+            padding: 0.5rem 1rem;
+            font-family: var(--font-body);
+            border-bottom: 2px solid #856f48;
+            flex-wrap: wrap;
+        }
+
+        .health-bar-container {
+            width: 100px;
+            height: 15px;
+            background: #440000;
+            border: 1px solid #fff;
+            margin-left: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .health-fill {
+            height: 100%;
+            background: #ff0000;
+            width: 100%;
+            transition: width 0.5s;
+        }
+
+        /* Inventory Styling */
+        .inventory-box {
+            display: inline-flex;
+            gap: 5px;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+        .inv-item {
+            font-size: 1.2rem;
+            cursor: help;
+            filter: drop-shadow(0 0 2px gold);
+        }
+
+        .journal-entry {
+            background: rgba(255,255,255,0.4);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--text-ink);
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .reflection-box {
+            background: #2b1d0e;
+            color: var(--accent-gold);
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 2px dashed var(--accent-gold);
+            font-size: 0.9rem;
+            display: none; 
+        }
+
+        .btn-retro {
+            background: #2b1d0e;
+            color: var(--parchment);
+            border: 2px outset #6e5a3e;
+            padding: 1rem;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            margin-bottom: 0.5rem;
+            transition: 0.1s;
+            position: relative;
+        }
+
+        .btn-retro:hover:not(:disabled) {
+            background: #4a3c2a;
+            color: var(--magic-cyan);
+            border-style: inset;
+            padding-left: 1.5rem; 
+        }
+
+        .btn-retro:active:not(:disabled) { border-style: inset; transform: translateY(2px); }
+        
+        .btn-retro:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            filter: grayscale(1); 
+            border-color: #444;
+            color: #888;
+        }
+
+        .sfx-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 5px;
+        }
+
         @media (max-width: 600px) {
-            .class-grid { grid-template-columns: 1fr; }
-            .stats-bar { flex-direction: column; gap: 0.5rem; text-align: center; }
+            .game-container { height: 100vh; border: none; }
+            .class-grid, .map-container { grid-template-columns: 1fr; }
+            .hud-bar { font-size: 0.8rem; flex-direction: column; gap: 5px; }
         }
     </style>
 </head>
@@ -205,427 +317,547 @@
 <div class="game-container">
     <header>
         <h1>Reliability Quest</h1>
-        <div style="font-size: 0.8rem; color: #888;">The Legend of Uptime in Assetia</div>
+        <div style="font-size: 0.8rem; opacity: 0.8;">The Legend of Uptime</div>
+        <button class="sfx-toggle" id="sfx-btn" onclick="toggleAudio()">🔊 SFX: ON</button>
     </header>
 
-    <!-- 1. Start Screen / Class Selection -->
+    <!-- 1. CLASS SELECTION -->
     <div id="start-screen" class="screen active">
         <div style="text-align: center; margin-bottom: 1rem;">
-            <h2>Choose Your Hero</h2>
-            <p>The Realm of Assetia is in danger. Who will save the production line?</p>
+            <h2>Select Your Avatar</h2>
+            <p>The factory floors of Assetia grow cold. Who will light the fires?</p>
         </div>
-        
-        <div class="class-grid" id="class-list">
-            <!-- Classes injected via JS -->
+        <div class="class-grid" id="class-list"></div>
+    </div>
+
+    <!-- 2. MAP SCREEN -->
+    <div id="map-screen" class="screen">
+        <div style="text-align: center;">
+            <h2>Map of Assetia</h2>
+            <p>Clear all sectors to unlock the Final Stand.</p>
+        </div>
+        <div class="map-container" id="map-grid">
+            <!-- Zones Injected Here -->
         </div>
     </div>
 
-    <!-- 2. Game Screen -->
+    <!-- 3. GAMEPLAY SCREEN -->
     <div id="game-screen" class="screen">
-        <!-- Stats Header -->
-        <div class="stats-bar">
-            <div class="stat-box">HERO: <span id="hero-name-display"></span></div>
-            <div class="stat-box">ASSET UPTIME (HP): <span id="hp-display">100%</span></div>
-            <div class="stat-box">RELIABILITY XP: <span id="xp-display">0</span></div>
+        <div class="hud-bar">
+            <div><span id="hero-name">Hero</span></div>
+            <div>HP: <div class="health-bar-container"><div class="health-fill" id="hp-bar"></div></div></div>
+            <div>XP: <span id="xp-display" style="color:var(--magic-cyan)">0</span></div>
+            <div>🎒: <span id="inventory-display" class="inventory-box">Empty</span></div>
         </div>
 
-        <!-- Main Narrative Area -->
-        <div class="narrative-box" id="story-log">
-            <!-- Story content goes here -->
-        </div>
-
-        <!-- Dice Roll Animation Area -->
-        <div class="dice-area" id="dice-area"></div>
-
-        <!-- Player Choices -->
-        <div class="choice-container" id="choices-area">
-            <!-- Buttons injected via JS -->
-        </div>
+        <div id="story-area" style="flex:1; overflow-y: auto; padding: 1rem;"></div>
+        <div id="controls-area" style="padding: 1rem; background: rgba(0,0,0,0.05); border-top: 2px solid #6e5a3e;"></div>
     </div>
 
-    <!-- 3. End Screen -->
-    <div id="end-screen" class="screen">
-        <div class="result-card">
-            <h2 id="end-title">Quest Complete</h2>
-            <div class="badge" id="end-icon">🏆</div>
-            <p id="end-desc">The kingdom is safe.</p>
-            
-            <div style="margin-top: 2rem; text-align: left; background: rgba(0,0,0,0.2); padding: 1rem;">
-                <p><strong>Final Uptime:</strong> <span id="final-hp"></span></p>
-                <p><strong>Reliability Score:</strong> <span id="final-xp"></span></p>
-                <p><strong>Title Earned:</strong> <span id="final-rank"></span></p>
-            </div>
-
-            <button class="btn-primary" onclick="location.reload()">Play Again</button>
+    <!-- 4. END SCREEN -->
+    <div id="end-screen" class="screen" style="text-align: center; justify-content: center;">
+        <h2 id="end-title" style="font-size: 2rem; margin-bottom: 1rem;">Quest Complete</h2>
+        <p id="end-desc" style="font-size: 1.2rem;">The assets are safe.</p>
+        <br>
+        <div style="background: #fff; padding: 1rem; border: 1px solid #000; display: inline-block; margin: 0 auto;">
+            Final Reliability Score: <strong id="final-score">0</strong>
         </div>
+        <br><br>
+        <button class="btn-retro" style="text-align: center;" onclick="location.reload()">New Game</button>
     </div>
 </div>
 
 <script>
-    // --- GAME DATA ---
+    /* --- SOUND ENGINE --- */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioEnabled = true;
 
-    const CLASSES = [
-        {
-            id: 'knight',
-            name: 'Condition Knight',
-            role: 'CBM Specialist',
-            icon: '🛡️',
-            desc: 'Master of sensors. Bonuses to Detection and Early Warning.',
-            bonusType: 'detect'
-        },
-        {
-            id: 'sage',
-            name: 'Data Sage',
-            role: 'Data Analyst',
-            icon: '🔮',
-            desc: 'Reader of trends. Bonuses to History and Root Cause.',
-            bonusType: 'analyze'
-        },
-        {
-            id: 'cleric',
-            name: 'Planner Cleric',
-            role: 'Planner/Scheduler',
-            icon: '📜',
-            desc: 'Keeper of parts. Bonuses to Planning and Resource Prep.',
-            bonusType: 'plan'
-        },
-        {
-            id: 'wrench',
-            name: 'Wrenchblade',
-            role: 'Technician',
-            icon: '🔧',
-            desc: 'Field warrior. Bonuses to Repair and Physical Inspection.',
-            bonusType: 'repair'
-        },
-        {
-            id: 'wizard',
-            name: 'Reliability Wizard',
-            role: 'Reliability Engineer',
-            icon: '⚡',
-            desc: 'Architect of strategy. Bonuses to FMEA and System Changes.',
-            bonusType: 'strategy'
-        }
-    ];
-
-    // The Adventure Steps
-    const SCENARIOS = [
-        {
-            id: 1,
-            title: "Stage 1: The Asset Awakens",
-            text: "You arrive at Pump Station 7. The operators report a 'Screech of Doom' during the afternoon shift. The asset is trembling.",
-            choices: [
-                { 
-                    text: "Use IR Scanner & Vib Analysis", 
-                    type: "detect", 
-                    classRef: "knight",
-                    success: "You spot a bearing fault immediately! You schedule a precise replacement.",
-                    fail: "The readings are fuzzy. You guess it's a bearing, but you aren't sure." 
-                },
-                { 
-                    text: "Pull Historical SCADA Data", 
-                    type: "analyze", 
-                    classRef: "sage",
-                    success: "Trendlines show a gradual heat rise over 30 days. This was predictable!",
-                    fail: "Data is corrupt! You spend hours cleaning spreadsheets while the pump screeches." 
-                },
-                { 
-                    text: "Tighten Components & Inspect", 
-                    type: "repair", 
-                    classRef: "wrench",
-                    success: "Your skilled hands find a loose mount. It buys time, though not a root cause.",
-                    fail: "You tighten a bolt too far and snap it. Whoops." 
-                },
-                { 
-                    text: "Check PM Schedule", 
-                    type: "plan", 
-                    classRef: "cleric",
-                    success: "Aha! The PM was skipped last month. You generate an emergency work order immediately.",
-                    fail: "The paperwork is a mess. You can't tell when it was last greased." 
-                }
-            ]
-        },
-        {
-            id: 2,
-            title: "Stage 2: The Dungeon of Downtime",
-            text: "The pump has been taken offline for repair. But wait! The store room is dark and chaotic. We need the spare impeller NOW.",
-            choices: [
-                {
-                    text: "Inventory Incantation (Check BOM)",
-                    type: "plan",
-                    classRef: "cleric",
-                    success: "Your BOM is accurate. You find the part in Bin 4B instantly.",
-                    fail: "The system says 'In Stock', but the bin is empty. Ghost inventory!"
-                },
-                {
-                    text: "Cannibalize from Old Asset",
-                    type: "repair",
-                    classRef: "wrench",
-                    success: "It's not pretty, but you refurbish an old part to get running. Production is saved.",
-                    fail: "The old part doesn't fit. Now you have two broken pumps."
-                },
-                {
-                    text: "Analyze Supply Chain Lead Times",
-                    type: "analyze",
-                    classRef: "sage",
-                    success: "You realize this vendor is always late. You trigger an expedited shipment you set up years ago.",
-                    fail: "Spreadsheets won't make the truck drive faster. Downtime ticks up."
-                }
-            ]
-        },
-        {
-            id: 3,
-            title: "Stage 3: The Reliability Gauntlet",
-            text: "The asset is running, but the 'Demon of Unreliability' (Repeat Failures) looms. How do we stop this from happening next month?",
-            choices: [
-                {
-                    text: "Cast FMEA Storm",
-                    type: "strategy",
-                    classRef: "wizard",
-                    success: "You identify the failure mode and redesign the maintenance strategy. The Demon vanishes!",
-                    fail: " The meeting drags on for 4 hours. No one agrees on the RPN score."
-                },
-                {
-                    text: "Install Continuous Monitoring",
-                    type: "detect",
-                    classRef: "knight",
-                    success: "Wireless sensors installed. The asset will never surprise us again.",
-                    fail: "The sensors won't connect to the Wi-Fi. A tech nightmare."
-                },
-                {
-                    text: "Re-write the PM Procedure",
-                    type: "plan",
-                    classRef: "cleric",
-                    success: "Clear, concise instructions. The techs applaud your clarity.",
-                    fail: "You write a 50-page document that no one will ever read."
-                }
-            ]
-        }
-    ];
-
-    // --- STATE MANAGEMENT ---
-
-    let state = {
-        heroClass: null,
-        hp: 100, // Represents Asset Health / Uptime
-        xp: 0,   // Represents Reliability Score
-        currentScenario: 0,
-        logHistory: []
-    };
-
-    // --- DOM ELEMENTS ---
-    const screens = {
-        start: document.getElementById('start-screen'),
-        game: document.getElementById('game-screen'),
-        end: document.getElementById('end-screen')
-    };
-    
-    const elClassList = document.getElementById('class-list');
-    const elStoryLog = document.getElementById('story-log');
-    const elChoices = document.getElementById('choices-area');
-    const elDice = document.getElementById('dice-area');
-
-    const elHeroName = document.getElementById('hero-name-display');
-    const elHp = document.getElementById('hp-display');
-    const elXp = document.getElementById('xp-display');
-
-    // --- INITIALIZATION ---
-
-    function init() {
-        renderClassSelection();
+    function toggleAudio() {
+        audioEnabled = !audioEnabled;
+        document.getElementById('sfx-btn').innerText = audioEnabled ? "🔊 SFX: ON" : "🔇 SFX: OFF";
     }
 
-    function renderClassSelection() {
-        elClassList.innerHTML = '';
+    function playSound(type) {
+        if (!audioEnabled) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+
+        if (type === 'hover') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); gain.gain.setValueAtTime(0.05, now); osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'click') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.1); gain.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'success') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.setValueAtTime(1000, now + 0.1); gain.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'fail') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.linearRampToValueAtTime(50, now + 0.3); gain.gain.setValueAtTime(0.2, now); osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'loot') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.2); gain.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.2);
+        }
+    }
+
+    /* --- CONFIG --- */
+    const CLASSES = [
+        { id: 'knight', name: 'Condition Knight', role: 'CBM Specialist', img: 'img/knight.png', bonus: 'detect' },
+        { id: 'sage', name: 'Data Sage', role: 'Analyst', img: 'img/sage.png', bonus: 'analyze' },
+        { id: 'cleric', name: 'Planner Cleric', role: 'Planner', img: 'img/cleric.png', bonus: 'plan' },
+        { id: 'wrench', name: 'Wrenchblade', role: 'Technician', img: 'img/wrench.png', bonus: 'repair' },
+        { id: 'wizard', name: 'Reliability Wizard', role: 'Engineer', img: 'img/wizard.png', bonus: 'strategy' }
+    ];
+
+    const ZONES = [
+        { id: 'plant', name: 'The Eastern Plant', icon: '🏭', img: 'img/plant.png' },
+        { id: 'cmms', name: 'CMMS Tower', icon: '🏰', img: 'img/cmms.png' },
+        { id: 'dungeon', name: 'Dungeon of Inventory', icon: '📦', img: 'img/dungeon.png' }
+    ];
+
+    /* --- INVENTORY DEFINITIONS --- */
+    const TOOLS = {
+        irScanner: { name: "IR Scanner", icon: "🔦" },
+        spareSeal: { name: "Spare Seal", icon: "⭕" },
+        rcaScroll: { name: "Scroll of RCA", icon: "📜" },
+        vibSword: { name: "Vibro Sword", icon: "⚔️" },
+        backupDisk: { name: "Backup Disk", icon: "💾" }
+    };
+
+    /* --- SCENARIO DATABASE --- */
+    // Updated with REWARDS and REQUIREMENTS
+    const SCENARIO_DB = [
+        // ZONE: PLANT
+        {
+            zone: 'plant',
+            title: "The Hum of Hazard",
+            text: "You patrol the Eastern Plant. The air smells of oil. Suddenly—bzzzzzzmmmmmmmmm—a low hum echoes from the great Cooling Fan of Chiller 13.",
+            reflection: "PRO TIP: Early detection is key.",
+            choices: [
+                { text: "Draw Vibration Sword (Scan Bearings)", type: "detect", result: "success", msg: "Your gauntlet trembles. Unbalanced shaft! You catch it early. You find a dropped scanner nearby. (+20 XP)", xp: 20, damage: 0, reward: "vibSword" },
+                { text: "Summon Thermal Spirit (IR Scan)", type: "detect", result: "neutral", msg: "Your vision reveals a hot spot. You found an IR Scanner! (+10 XP)", xp: 10, damage: 0, reward: "irScanner" },
+                { text: "Consult the Scribes (Ask Technician)", type: "analyze", result: "fail", msg: "He shrugs. Not helpful. The hum gets louder.", xp: 2, damage: 10 },
+                { text: "Do Nothing", type: "lazy", result: "crit_fail", msg: "The fan explodes. Catastrophic failure.", xp: 0, damage: 40 }
+            ]
+        },
+        {
+            zone: 'plant',
+            title: "The Gremlin of Grease",
+            text: "A technician reports overheating motors. The gremlin of over-lubrication may be near.",
+            reflection: "REMEMBER: More grease isn't always better.",
+            choices: [
+                { text: "Use IR Scanner (Check Temps)", type: "detect", result: "success", msg: "With your scanner, you confirm the high temps and drain the excess grease. Perfect fix! (+25 XP)", xp: 25, damage: 0, requires: "irScanner" },
+                { text: "Add More Grease", type: "lazy", result: "crit_fail", msg: "POP! The bearing seal bursts. You made it worse. (0 XP)", xp: 0, damage: 30 },
+                { text: "Monitor by Hand", type: "analyze", result: "neutral", msg: "It feels hot, but you aren't sure how hot. Risky. (+10 XP)", xp: 10, damage: 5 }
+            ]
+        },
+        {
+            zone: 'plant',
+            title: "The Alignment Crypt",
+            text: "A grinding noise haunts the central pump. The previous maintenance log shows vague entries.",
+            reflection: "TIP: Laser alignment saves bearings.",
+            choices: [
+                { text: "Use Laser Alignment Spell", type: "repair", result: "success", msg: "Perfect alignment. The noise fades. (+25 XP)", xp: 25, damage: 0 },
+                { text: "Align by Eye", type: "repair", result: "fail", msg: "It runs... for now. A gremlin chuckles in the shadows. (+5 XP)", xp: 5, damage: 10 },
+                { text: "Log Work & Delay", type: "plan", result: "neutral", msg: "You've kicked the can. The problem still lurks. (+10 XP)", xp: 10, damage: 5 }
+            ]
+        },
+        {
+            zone: 'plant',
+            title: "The Enigma of Energy Efficiency",
+            text: "Power consumption spikes during night shifts. The Enigma of Energy Waste puzzles the facility.",
+            reflection: "INSIGHT: Idle equipment consumes power.",
+            choices: [
+                { text: "Deploy Energy Monitoring Runes", type: "detect", result: "success", msg: "You discover idle equipment left running. (+23 XP)", xp: 23, damage: 0 },
+                { text: "Replace All Motors", type: "repair", result: "neutral", msg: "Expensive, but helps partially. (+14 XP)", xp: 14, damage: 7 },
+                { text: "Blame the Utility Company", type: "lazy", result: "fail", msg: "The bills keep rising. (+2 XP)", xp: 2, damage: 15 }
+            ]
+        },
+
+        // ZONE: CMMS TOWER
+        {
+            zone: 'cmms',
+            title: "The Ghost in the Machine",
+            text: "The work order history for the Crusher has vanished. Without history, the predictive model is blind.",
+            reflection: "FACT: Garbage in, garbage out.",
+            choices: [
+                { text: "Cast 'Data Audit' (Analyze Logs)", type: "analyze", result: "success", msg: "You trace the deletion to a glitch and find a Backup Disk! (+20 XP)", xp: 20, damage: 0, reward: "backupDisk" },
+                { text: "Guess the Failure Mode", type: "strategy", result: "fail", msg: "You guess wrong. The model learns the wrong lesson.", xp: 5, damage: 15 },
+                { text: "Reboot the Server", type: "repair", result: "neutral", msg: "You turn it off and on again. It works, but root cause unknown.", xp: 10, damage: 5 }
+            ]
+        },
+        {
+            zone: 'cmms',
+            title: "The Scrolls of Root Cause",
+            text: "Three identical pumps have failed this month. The ancient scrolls whisper of a pattern.",
+            reflection: "WISDOM: Look for patterns across failures.",
+            choices: [
+                { text: "Use Backup Disk to Compare", type: "analyze", result: "success", msg: "Using the backup data, you find the exact correlation. Masterful! (+30 XP)", xp: 30, damage: 0, requires: "backupDisk" },
+                { text: "Consult the Data Oracle", type: "analyze", result: "success", msg: "The pattern reveals itself: peak load failures. (+20 XP)", xp: 20, damage: 0 },
+                { text: "Replace All Three Pumps", type: "repair", result: "neutral", msg: "Expensive fix. You found a Scroll of RCA in the box though. (+10 XP)", xp: 10, damage: 5, reward: "rcaScroll" },
+                { text: "Blame the Operator", type: "lazy", result: "fail", msg: "The operators revolt. Production halts.", xp: 0, damage: 25 }
+            ]
+        },
+        {
+            zone: 'cmms',
+            title: "The Phantom of PM Compliance",
+            text: "The maintenance schedule shows gaps. Critical assets haven't been touched in months.",
+            reflection: "TRUTH: Compliance tracking is essential.",
+            choices: [
+                { text: "Summon the Schedule Keeper", type: "plan", result: "success", msg: "You identify the gaps and restore the schedule. (+22 XP)", xp: 22, damage: 0 },
+                { text: "Perform Emergency PMs Now", type: "repair", result: "neutral", msg: "You catch up, but it's reactive. (+12 XP)", xp: 12, damage: 8 },
+                { text: "Ignore the Schedule", type: "lazy", result: "crit_fail", msg: "The phantom grows stronger. Unplanned failures multiply. (-5 XP)", xp: -5, damage: 35 }
+            ]
+        },
+        {
+            zone: 'cmms',
+            title: "The Oracle of OEE",
+            text: "Overall Equipment Effectiveness drops. The Oracle of OEE demands answers.",
+            reflection: "METRICS: OEE = Availability × Performance × Quality.",
+            choices: [
+                { text: "Consult All Three Pillars", type: "analyze", result: "success", msg: "You identify bottlenecks in all areas. (+32 XP)", xp: 32, damage: 0 },
+                { text: "Focus on Availability Only", type: "repair", result: "neutral", msg: "Uptime improves, but quality suffers. (+17 XP)", xp: 17, damage: 10 },
+                { text: "Blame the Equipment", type: "lazy", result: "fail", msg: "The oracle scoffs. OEE continues to decline. (+4 XP)", xp: 4, damage: 22 }
+            ]
+        },
+
+        // ZONE: DUNGEON
+        {
+            zone: 'dungeon',
+            title: "The Dungeon of Spare Parts",
+            text: "A critical pump has failed. You rush to the store room, but the shelves are in chaos.",
+            reflection: "DID YOU KNOW? Clean data saves time!",
+            choices: [
+                { text: "Cast 'Inventory Lookup' (Check BOM)", type: "plan", result: "success", msg: "The BOM is accurate! You find a Spare Seal in Bin 4B. (+20 XP)", xp: 20, damage: 0, reward: "spareSeal" },
+                { text: "Rummage Blindly", type: "repair", result: "fail", msg: "You spend 3 hours digging. Wrong size found.", xp: 5, damage: 20 },
+                { text: "Cannibalize Old Pump", type: "repair", result: "neutral", msg: "Risky... but it fits for now.", xp: 10, damage: 5 }
+            ]
+        },
+        {
+            zone: 'dungeon',
+            title: "The Leak of DOOM",
+            text: "A high pressure pipe has sprung a leak! The fluid is everywhere.",
+            reflection: "SAFETY: Containment first.",
+            choices: [
+                { text: "Install Spare Seal", type: "repair", result: "success", msg: "You quickly swap in the Spare Seal you found earlier. Perfect fit! (+30 XP)", xp: 30, damage: 0, requires: "spareSeal" },
+                { text: "Apply Emergency Tape", type: "repair", result: "neutral", msg: "It holds... barely. (+10 XP)", xp: 10, damage: 10 },
+                { text: "Let it Leak", type: "lazy", result: "crit_fail", msg: "Environmental disaster! The EPA has been summoned.", xp: 0, damage: 50 }
+            ]
+        },
+        {
+            zone: 'dungeon',
+            title: "The Curse of the Backlog",
+            text: "The backlog grows like a shadow. 200 work orders await.",
+            reflection: "REALITY: Prioritization matters.",
+            choices: [
+                { text: "Cast Prioritization Spell", type: "strategy", result: "success", msg: "You focus on critical assets first. (+28 XP)", xp: 28, damage: 0 },
+                { text: "Work Faster", type: "repair", result: "neutral", msg: "You clear 50 orders, but burnout sets in. (+15 XP)", xp: 15, damage: 12 },
+                { text: "Close Old Work Orders", type: "lazy", result: "fail", msg: "Hidden failures emerge. (+3 XP)", xp: 3, damage: 20 }
+            ]
+        },
+        {
+            zone: 'dungeon',
+            title: "The Labyrinth of Legacy Systems",
+            text: "Ancient equipment runs on obsolete protocols. Modernization is required.",
+            reflection: "CHALLENGE: Migration planning is critical.",
+            choices: [
+                { text: "Chart Migration Path", type: "strategy", result: "success", msg: "You create a phased migration. (+27 XP)", xp: 27, damage: 0 },
+                { text: "Patch and Maintain", type: "repair", result: "neutral", msg: "It works for now, but technical debt accumulates. (+13 XP)", xp: 13, damage: 9 },
+                { text: "Ignore Until Failure", type: "lazy", result: "crit_fail", msg: "When it fails, no one knows how to fix it. (+0 XP)", xp: 0, damage: 40 }
+            ]
+        }
+    ];
+
+    const FINAL_SCENARIO = {
+        title: "The Final Stand: The Demon of Downtime",
+        text: "The Demon of Downtime rises. All your skills are tested.",
+        reflection: "LEGEND: Master all paths.",
+        choices: [
+            { text: "Unite All Disciplines (Holistic Approach)", type: "strategy", result: "success", msg: "You combine CBM, planning, and data. The demon falls! (+50 XP)", xp: 50, damage: 0 },
+            { text: "Cast 'Ultimate RCA'", type: "analyze", result: "success", msg: "Using your Scroll of RCA, you banish the root cause forever! (+60 XP)", xp: 60, damage: 0, requires: "rcaScroll" },
+            { text: "Rush to Repair", type: "repair", result: "neutral", msg: "You fight valiantly, but the demon returns. (+20 XP)", xp: 20, damage: 15 },
+            { text: "Panic and React", type: "lazy", result: "crit_fail", msg: "The demon laughs. Darkness falls. (+0 XP)", xp: 0, damage: 50 }
+        ]
+    };
+
+    /* --- LOGIC --- */
+    let state = {
+        hero: null,
+        hp: 100,
+        xp: 0,
+        inventory: [],
+        completedZones: [],
+        activeScenarios: [], 
+        currentScenarioIndex: 0
+    };
+
+    const ui = {
+        screens: document.querySelectorAll('.screen'),
+        classList: document.getElementById('class-list'),
+        mapGrid: document.getElementById('map-grid'),
+        storyArea: document.getElementById('story-area'),
+        controls: document.getElementById('controls-area'),
+        hpBar: document.getElementById('hp-bar'),
+        xpDisplay: document.getElementById('xp-display'),
+        invDisplay: document.getElementById('inventory-display')
+    };
+
+    function init() { renderClasses(); }
+    function showScreen(id) { ui.screens.forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+    function updateInventoryDisplay() {
+        if (state.inventory.length === 0) {
+            ui.invDisplay.innerText = 'Empty';
+        } else {
+            ui.invDisplay.innerHTML = state.inventory.map(item => `<span class="inv-item" title="${TOOLS[item].name}">${TOOLS[item].icon}</span>`).join(' ');
+        }
+    }
+
+    /* CLASS SELECTION */
+    function renderClasses() {
+        ui.classList.innerHTML = '';
         CLASSES.forEach(cls => {
             const card = document.createElement('div');
             card.className = 'class-card';
-            card.onclick = () => startGame(cls);
+            card.onmouseenter = () => playSound('hover');
+            card.onclick = () => selectClass(cls);
+            
+            const imgHTML = `<div class="card-image-slot">
+                <img src="${cls.img}" 
+                     onerror="if (!this.getAttribute('data-retried')) { 
+                        this.setAttribute('data-retried', 'true');
+                        if(this.src.endsWith('.png')) this.src = this.src.replace('.png', '.jpg');
+                        else if(this.src.endsWith('.jpg')) this.src = this.src.replace('.jpg', '.png');
+                     } else { 
+                        this.parentElement.classList.add('missing-img'); 
+                     }">
+            </div>`;
+
             card.innerHTML = `
-                <span class="class-icon">${cls.icon}</span>
-                <div class="class-title">${cls.name}</div>
-                <div style="font-size: 0.8rem; color: #c5a059; margin-bottom: 0.5rem;">${cls.role}</div>
-                <div class="class-desc">${cls.desc}</div>
+                ${imgHTML}
+                <div class="class-name">${cls.name}</div>
+                <div class="class-role">${cls.role}</div>
+                <div style="margin-top:5px; font-size:0.8rem; color:#6e5a3e;">Strong vs: ${cls.bonus.toUpperCase()}</div>
             `;
-            elClassList.appendChild(card);
+            ui.classList.appendChild(card);
         });
     }
 
-    function switchScreen(screenName) {
-        Object.values(screens).forEach(s => s.classList.remove('active'));
-        screens[screenName].classList.add('active');
-    }
-
-    function startGame(selectedClass) {
-        state.heroClass = selectedClass;
+    function selectClass(cls) {
+        playSound('click');
+        state.hero = cls;
         state.hp = 100;
         state.xp = 0;
-        state.currentScenario = 0;
-        state.logHistory = [];
-
-        // UI Updates
-        elHeroName.innerText = `${selectedClass.name}`;
-        elHeroName.innerHTML += ` <span style="font-size:0.8em">${selectedClass.icon}</span>`;
-        elStoryLog.innerHTML = `<p class="story-text" style="color:var(--accent-gold)">Welcome, ${selectedClass.name}. The journey begins...</p>`;
-
-        switchScreen('game');
+        state.inventory = [];
+        state.completedZones = [];
+        document.getElementById('hero-name').innerText = cls.name;
         updateStats();
+        updateInventoryDisplay();
+        renderMap();
+        showScreen('map-screen');
+    }
+
+    /* MAP LOGIC */
+    function renderMap() {
+        ui.mapGrid.innerHTML = '';
+        
+        ZONES.forEach(zone => {
+            const isCompleted = state.completedZones.includes(zone.id);
+            const zoneEl = document.createElement('div');
+            zoneEl.className = `map-zone ${isCompleted ? 'completed' : ''}`;
+            zoneEl.style.backgroundImage = `url('${zone.img}')`;
+            
+            const imgCheck = new Image();
+            imgCheck.src = zone.img;
+            imgCheck.onerror = () => {
+                zoneEl.classList.add('missing-zone-img');
+                zoneEl.style.backgroundImage = 'none';
+            };
+
+            zoneEl.innerHTML = `<div class="icon">${zone.icon}</div><div class="map-zone-content"><h3>${zone.name}</h3></div>`;
+            
+            if (!isCompleted) {
+                zoneEl.onclick = () => enterZone(zone.id);
+                zoneEl.onmouseenter = () => playSound('hover');
+            }
+            ui.mapGrid.appendChild(zoneEl);
+        });
+
+        if (state.completedZones.length === ZONES.length) {
+            const bossEl = document.createElement('div');
+            bossEl.className = 'map-zone';
+            bossEl.style.borderColor = 'var(--blood-red)';
+            bossEl.style.backgroundImage = "url('img/demon.png')";
+            
+            const imgCheck = new Image();
+            imgCheck.src = 'img/demon.png';
+            imgCheck.onerror = () => {
+                bossEl.classList.add('missing-zone-img');
+                bossEl.style.backgroundImage = 'none';
+                bossEl.style.backgroundColor = '#2b0000';
+            };
+
+            bossEl.innerHTML = `<div class="icon" style="font-size:4rem;">👹</div><div class="map-zone-content"><h3>The Demon's Lair</h3></div>`;
+            bossEl.onclick = () => enterBossFight();
+            bossEl.onmouseenter = () => playSound('hover');
+            ui.mapGrid.appendChild(bossEl);
+        }
+    }
+
+    function enterZone(zoneId) {
+        playSound('click');
+        state.activeScenarios = SCENARIO_DB.filter(s => s.zone === zoneId);
+        state.currentScenarioIndex = 0;
+        state.currentZoneId = zoneId;
         loadScenario();
+        showScreen('game-screen');
+    }
+
+    function enterBossFight() {
+        playSound('click');
+        state.activeScenarios = [FINAL_SCENARIO];
+        state.currentScenarioIndex = 0;
+        state.currentZoneId = 'boss';
+        loadScenario();
+        showScreen('game-screen');
     }
 
     function updateStats() {
-        elHp.innerText = state.hp + "%";
-        elXp.innerText = state.xp;
-        
-        // Color coding health
-        if(state.hp < 50) elHp.style.color = "var(--accent-red)";
-        else elHp.style.color = "var(--accent-green)";
+        ui.hpBar.style.width = Math.max(0, state.hp) + "%";
+        ui.xpDisplay.innerText = state.xp;
     }
 
+    /* SCENARIO RUNNER */
     function loadScenario() {
-        const scenario = SCENARIOS[state.currentScenario];
-        
-        // Add story text
-        const storyBlock = document.createElement('div');
-        storyBlock.innerHTML = `
-            <h3 style="color:var(--accent-gold); border-bottom: 1px solid #444; padding-bottom:5px;">${scenario.title}</h3>
-            <p class="story-text">${scenario.text}</p>
-        `;
-        elStoryLog.appendChild(storyBlock);
-        elStoryLog.scrollTop = elStoryLog.scrollHeight;
+        const scen = state.activeScenarios[state.currentScenarioIndex];
 
-        // Render Choices
-        elChoices.innerHTML = '';
-        scenario.choices.forEach((choice, index) => {
+        ui.storyArea.innerHTML = `
+            <h2 style="color:var(--accent-gold)">${scen.title}</h2>
+            <div class="journal-entry">${scen.text}</div>
+            <div id="result-log"></div>
+            <div id="reflection-panel" class="reflection-box">
+                <strong>💡 DM's NOTE:</strong><br>
+                ${scen.reflection}
+                <br><br>
+                <button class="btn-retro" style="width:100%" onclick="nextStep()">Continue Journey >></button>
+            </div>
+        `;
+
+        ui.controls.innerHTML = '';
+        ui.controls.style.display = 'block'; 
+
+        scen.choices.forEach(choice => {
             const btn = document.createElement('button');
-            btn.className = 'choice-btn';
+            btn.className = 'btn-retro';
+            btn.style.width = '100%';
             
-            // Add class specific flavor icon if matches
-            let icon = "👉";
-            if (choice.type === state.heroClass.bonusType) icon = "✨"; 
-            
-            btn.innerHTML = `${icon} ${choice.text}`;
-            btn.onclick = () => handleChoice(choice);
-            elChoices.appendChild(btn);
+            let bonusText = "";
+            if (choice.type === state.hero.bonus) {
+                bonusText = " <span style='color:var(--magic-cyan)'>(Class Bonus)</span>";
+                btn.style.borderColor = "var(--magic-cyan)";
+            }
+
+            // Tool Requirement Check
+            if (choice.requires && !state.inventory.includes(choice.requires)) {
+                btn.disabled = true;
+                btn.innerHTML = `🔒 ${choice.text} <span style="font-size:0.8em; color:#888">(Requires ${TOOLS[choice.requires].name})</span>`;
+            } else {
+                btn.innerHTML = `👉 ${choice.text} ${bonusText}`;
+                btn.onclick = () => resolveTurn(choice);
+                btn.onmouseenter = () => playSound('hover');
+            }
+
+            ui.controls.appendChild(btn);
         });
     }
 
-    function handleChoice(choice) {
-        // Disable buttons
-        const btns = document.querySelectorAll('.choice-btn');
-        btns.forEach(b => b.disabled = true);
-
-        elDice.innerHTML = "🎲 Rolling...";
-        elDice.classList.add('dice-roll-anim');
-
-        // Simulate Roll Delay
-        setTimeout(() => {
-            elDice.classList.remove('dice-roll-anim');
-            resolveAction(choice);
-        }, 1000);
-    }
-
-    function resolveAction(choice) {
-        // D20 Logic
-        let rawRoll = Math.floor(Math.random() * 20) + 1;
-        let modifier = 0;
-        let isClassMatch = (choice.type === state.heroClass.bonusType) || (choice.classRef === state.heroClass.id);
-
-        // Bonus for matching class specialty
-        if (isClassMatch) {
-            modifier = 5;
-        }
-
-        let total = rawRoll + modifier;
-        let success = total >= 12; // DC (Difficulty Class) is 12
-
-        // Critical Success
-        if (rawRoll === 20) {
-            total = "CRIT!";
-            success = true;
-        }
-
-        // Visual Feedback
-        let resultColor = success ? "var(--accent-green)" : "var(--accent-red)";
-        elDice.innerHTML = `<span style="color:${resultColor}">Rolled: ${total}</span> <span style="font-size:0.6em; color:#888">(d20 + ${modifier})</span>`;
-
-        // Apply Outcomes
-        if (success) {
-            state.xp += (rawRoll === 20) ? 50 : 25;
-            addLog(choice.success, "success");
-        } else {
-            state.hp -= 20;
-            state.xp += 5; // You learn from failure
-            addLog(choice.fail, "fail");
+    function resolveTurn(choice) {
+        playSound('click');
+        ui.controls.style.display = 'none';
+        state.xp += choice.xp;
+        state.hp -= choice.damage;
+        
+        // Handle Inventory Reward
+        if (choice.reward && !state.inventory.includes(choice.reward)) {
+            state.inventory.push(choice.reward);
+            updateInventoryDisplay();
+            playSound('loot');
         }
 
         updateStats();
 
-        // Next Step
-        setTimeout(() => {
-            state.currentScenario++;
-            elDice.innerHTML = "";
-            
-            if (state.hp <= 0) {
-                endGame(false);
-            } else if (state.currentScenario >= SCENARIOS.length) {
-                endGame(true);
-            } else {
-                loadScenario();
-            }
-        }, 2000);
-    }
+        if (choice.damage > 0) playSound('fail');
+        else playSound('success');
 
-    function addLog(text, type) {
-        const log = document.createElement('div');
-        log.className = `log-entry ${type}`;
-        log.innerText = text;
-        elStoryLog.appendChild(log);
-        elStoryLog.scrollTop = elStoryLog.scrollHeight;
-    }
-
-    function endGame(victory) {
-        switchScreen('end');
+        const log = document.getElementById('result-log');
+        let color = choice.damage > 0 ? 'var(--blood-red)' : 'var(--magic-cyan)';
         
-        const finalHpEl = document.getElementById('final-hp');
-        const finalXpEl = document.getElementById('final-xp');
-        const finalRankEl = document.getElementById('final-rank');
-        const titleEl = document.getElementById('end-title');
-        const descEl = document.getElementById('end-desc');
-        const iconEl = document.getElementById('end-icon');
+        let rewardMsg = choice.reward ? `<br><br><span style="color:gold">✨ ACQUIRED: ${TOOLS[choice.reward].name}</span>` : '';
 
-        finalHpEl.innerText = state.hp + "%";
-        finalXpEl.innerText = state.xp;
+        log.innerHTML = `<p style="color:${color}; font-weight:bold; margin-top:1rem;">> ${choice.msg}${rewardMsg}</p>`;
 
-        if (!victory) {
-            titleEl.innerText = "Production Halted";
-            iconEl.innerText = "☠️";
-            descEl.innerText = "The asset failed catastrophically. The line is down.";
-            finalRankEl.innerText = "The Fallen Technician";
-            titleEl.style.color = "var(--accent-red)";
+        document.getElementById('reflection-panel').style.display = 'block';
+    }
+
+    function nextStep() {
+        playSound('click');
+        if (state.hp <= 0) {
+            endGame();
+            return;
+        }
+
+        state.currentScenarioIndex++;
+
+        if (state.currentScenarioIndex < state.activeScenarios.length) {
+            loadScenario(); 
         } else {
-            titleEl.innerText = "Reliability Hero!";
-            titleEl.style.color = "var(--accent-gold)";
-            
-            if (state.xp >= 100 && state.hp >= 80) {
-                iconEl.innerText = "👑";
-                descEl.innerText = "Flawless performance! World Class Reliability achieved.";
-                finalRankEl.innerText = "Grandmaster of Assetia";
-            } else if (state.xp >= 50) {
-                iconEl.innerText = "🛡️";
-                descEl.innerText = "Good work. The asset is running, though we have some follow-ups.";
-                finalRankEl.innerText = "Guardian of Uptime";
+            if (state.currentZoneId === 'boss') {
+                endGame();
             } else {
-                iconEl.innerText = "🩹";
-                descEl.innerText = "You survived... barely. Reactive maintenance is exhausting.";
-                finalRankEl.innerText = "The Firefighter";
+                if (!state.completedZones.includes(state.currentZoneId)) {
+                    state.completedZones.push(state.currentZoneId);
+                }
+                renderMap();
+                showScreen('map-screen');
             }
         }
     }
 
-    // Run
+    function endGame() {
+        showScreen('end-screen');
+        document.getElementById('final-score').innerText = state.xp;
+        
+        const title = document.getElementById('end-title');
+        const desc = document.getElementById('end-desc');
+
+        if (state.hp <= 0) {
+            title.innerText = "Production Halted";
+            title.style.color = "var(--blood-red)";
+            desc.innerText = "The facility has fallen silent. The demons of downtime have won.";
+            playSound('fail');
+        } else {
+            if (state.xp >= 250) {
+                title.innerText = "Reliability Legend";
+                title.style.color = "var(--magic-cyan)";
+                desc.innerText = "The assets hum with efficiency. You have mastered all disciplines.";
+                playSound('success');
+            } else if (state.xp >= 150) {
+                title.innerText = "Guardian of Uptime";
+                title.style.color = "var(--accent-gold)";
+                desc.innerText = "The plant is running well. Good work.";
+                playSound('success');
+            } else {
+                title.innerText = "Reactive Firefighter";
+                title.style.color = "#a89f81"; 
+                desc.innerText = "You survived... barely. The assets are limping along.";
+                playSound('fail'); 
+            }
+        }
+    }
+
     init();
+    document.body.addEventListener('click', function() {
+        if(audioCtx.state === 'suspended') { audioCtx.resume(); }
+    }, {once:true});
 
 </script>
-
 </body>
 </html>
