@@ -15,12 +15,13 @@ A browser-based Role-Playing Game (RPG) designed for reliability and maintenance
 
 ## 🎯 Overview
 
-**Reliability Quest** is an educational RPG that gamifies maintenance and reliability concepts. Players navigate through different zones (The Eastern Plant, CMMS Tower, Dungeon of Inventory) solving maintenance challenges while learning best practices in condition monitoring, planning, data analysis, and strategic maintenance.
+**Reliability Quest** is an educational RPG that gamifies maintenance and reliability concepts. Players navigate through different zones (The Eastern Plant, CMMS Tower, Dungeon of Inventory) solving maintenance challenges while learning best practices in condition monitoring, planning, data analysis, and strategic maintenance. Each zone contains 5 unique scenarios, and players must complete all zones to unlock the final boss battle against the Demon of Downtime.
 
 ### Key Features
 
 - **5 Unique Character Classes** - Each with specialized bonuses
-- **3 Adventure Zones** - Each with multiple scenarios
+- **3 Adventure Zones** - Each with 5 unique scenarios (15 total scenarios + final boss)
+- **D20 Dice Rolling System** - Animated dice rolls determine action outcomes
 - **Inventory System** - Collect tools and items to unlock new options
 - **XP & Health System** - Track your progress and survival
 - **Retro RPG Aesthetic** - Classic dungeon-crawler feel with modern reliability themes
@@ -35,16 +36,22 @@ A browser-based Role-Playing Game (RPG) designed for reliability and maintenance
 2. **Open** the file in any modern web browser (Chrome, Edge, Safari, Firefox)
 3. **Select** a character class that matches your playstyle
 4. **Navigate** the map and enter zones to face maintenance challenges
-5. **Make choices** to solve problems and earn XP
-6. **Collect items** to unlock new solution paths
-7. **Defeat** the Demon of Downtime in the final boss battle
+5. **Make choices** - Each choice triggers an animated D20 dice roll that determines the outcome
+6. **Collect items** to unlock new solution paths (some choices require specific tools)
+7. **Complete all 3 zones** (5 scenarios each) to unlock the final boss
+8. **Defeat** the Demon of Downtime in the final boss battle
 
 ### Game Mechanics
 
 - **Health Points (HP)**: Start with 100 HP. Poor choices reduce HP. If HP reaches 0, the game ends.
 - **Experience Points (XP)**: Earned by making good maintenance decisions. Higher scores unlock better endings.
-- **Inventory**: Collect tools like IR Scanners, Spare Seals, and Scrolls of RCA to unlock new action options.
-- **Class Bonuses**: Each class has a specialty that provides advantages for certain action types.
+- **Dice Rolling**: Every action triggers an animated D20 dice roll. The roll result (1-20) is displayed and affects the outcome:
+  - **12-19**: Success (green glow)
+  - **20**: Critical Success (golden glow with pulse animation)
+  - **2-11**: Failure (gray)
+  - **1**: Critical Failure (red glow)
+- **Inventory**: Collect tools like IR Scanners, Spare Seals, Scrolls of RCA, Vibro Swords, Backup Disks, and OEM Manuals to unlock new action options.
+- **Class Bonuses**: Each class has a specialty that provides advantages for certain action types (highlighted with cyan border).
 
 ## 👥 Game Classes
 
@@ -95,7 +102,7 @@ The game is fully customizable by editing `index.html` directly. No build proces
 
 ### Adding New Scenarios
 
-Locate the `SCENARIO_DB` array in `index.html` (around line 427) and add new scenario objects:
+Locate the `SCENARIO_DB` array in `index.html` (around line 309) and add new scenario objects:
 
 ```javascript
 {
@@ -122,11 +129,12 @@ Locate the `SCENARIO_DB` array in `index.html` (around line 427) and add new sce
 
 - **XP Values**: Modify `xp` values in scenario choices to change reward amounts
 - **Damage Values**: Adjust `damage` values to make failures more/less punishing
-- **Health**: Change starting HP in the `selectClass()` function (line 647)
+- **Health**: Change starting HP in the `selectClass()` function (around line 565)
+- **Dice Results**: The dice system automatically displays results based on the `result` type (`success`, `neutral`, `fail`, `crit_fail`). The visual roll is determined by the outcome type, not a DC check.
 
 ### Editing Classes
 
-Modify the `CLASSES` array (around line 402):
+Modify the `CLASSES` array (around line 284):
 
 ```javascript
 {
@@ -140,7 +148,7 @@ Modify the `CLASSES` array (around line 402):
 
 ### Adding New Zones
 
-Add entries to the `ZONES` array (around line 410):
+Add entries to the `ZONES` array (around line 292):
 
 ```javascript
 {
@@ -153,7 +161,13 @@ Add entries to the `ZONES` array (around line 410):
 
 ### Customizing Tools/Inventory
 
-Modify the `TOOLS` object (around line 417) to add new collectible items:
+Modify the `TOOLS` object (around line 298) to add new collectible items. Current tools include:
+- `irScanner` - IR Scanner 🔦
+- `spareSeal` - Spare Seal ⭕
+- `rcaScroll` - Scroll of RCA 📜
+- `vibSword` - Vibro Sword ⚔️
+- `backupDisk` - Backup Disk 💾
+- `manual` - OEM Manual 📘
 
 ```javascript
 newTool: {
@@ -193,6 +207,8 @@ This game teaches maintenance and reliability professionals about:
 - **Inventory Management** - The importance of accurate data
 - **Strategic Maintenance** - Holistic approaches to reliability
 - **OEE (Overall Equipment Effectiveness)** - Key performance metrics
+- **Supply Chain Management** - Strategic spares and vendor relationships
+- **Data Integration** - Breaking down silos between departments
 
 ## 🐛 Troubleshooting
 
