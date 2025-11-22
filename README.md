@@ -181,7 +181,7 @@ reliability-quest/
 └── README.md          # This file
 ```
 
-**Note:** The game is self-contained in `index.html`. The `scenarios.js` file appears to be a legacy file and is not currently loaded by the game.
+**Note:** The game is self-contained in `index.html`. The `scenarios.js` file is a legacy file and is not currently loaded by the game.
 
 ## 🎓 Educational Value
 
