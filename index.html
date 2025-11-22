@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reliability Quest: Dice Edition</title>
+    <title>Reliability Quest: Replayability Edition</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -59,7 +59,7 @@
             z-index: 1;
         }
 
-        /* DICE OVERLAY (NEW) */
+        /* DICE OVERLAY */
         #dice-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -84,7 +84,7 @@
         /* CSS Hexagon D20 Shape */
         .d20-die {
             width: 120px;
-            height: 138px; /* Hexagon ratio roughly 1 : 1.15 */
+            height: 138px; 
             background-color: var(--text-ink);
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
             display: flex;
@@ -300,12 +300,14 @@
         spareSeal: { name: "Spare Seal", icon: "⭕" },
         rcaScroll: { name: "Scroll of RCA", icon: "📜" },
         vibSword: { name: "Vibro Sword", icon: "⚔️" },
-        backupDisk: { name: "Backup Disk", icon: "💾" }
+        backupDisk: { name: "Backup Disk", icon: "💾" },
+        manual: { name: "OEM Manual", icon: "📘" }
     };
 
     /* --- SCENARIO DATABASE --- */
+    // EXPANDED POOL FOR REPLAYABILITY
     const SCENARIO_DB = [
-        // ZONE: PLANT
+        // ZONE: PLANT (5 Scenarios)
         {
             zone: 'plant',
             title: "The Hum of Hazard",
@@ -351,8 +353,19 @@
                 { text: "Blame the Utility Company", type: "lazy", result: "fail", msg: "The bills keep rising. (+2 XP)", xp: 2, damage: 15 }
             ]
         },
+        {
+            zone: 'plant',
+            title: "The Shuddering Compressor",
+            text: "The main air compressor is shaking violently. Production will halt if it trips.",
+            reflection: "DIAGNOSTICS: Vibration analysis can distinguish between looseness, imbalance, and surge.",
+            choices: [
+                { text: "Analyze Vibration Signature", type: "detect", result: "success", msg: "It's compressor surge! You adjust the inlet vanes just in time. (+25 XP)", xp: 25, damage: 0 },
+                { text: "Tighten Floor Bolts", type: "repair", result: "fail", msg: "You tighten them, but the shaking comes from inside. It trips offline. (+5 XP)", xp: 5, damage: 20 },
+                { text: "Ignore it", type: "lazy", result: "crit_fail", msg: "BOOM. The compressor destroys itself.", xp: 0, damage: 45 }
+            ]
+        },
 
-        // ZONE: CMMS TOWER
+        // ZONE: CMMS TOWER (5 Scenarios)
         {
             zone: 'cmms',
             title: "The Ghost in the Machine",
@@ -398,8 +411,19 @@
                 { text: "Blame the Equipment", type: "lazy", result: "fail", msg: "The oracle scoffs. OEE continues to decline. (+4 XP)", xp: 4, damage: 22 }
             ]
         },
+        {
+            zone: 'cmms',
+            title: "The Data Silo",
+            text: "The Operations Tribe and Maintenance Guild are using different data scrolls. Confusion reigns.",
+            reflection: "CULTURE: One source of truth is essential for decision making.",
+            choices: [
+                { text: "Integrate Systems", type: "strategy", result: "success", msg: "You build a bridge between the databases. Harmony is restored. (+28 XP)", xp: 28, damage: 0 },
+                { text: "Hold a Meeting", type: "plan", result: "neutral", msg: "People yell for an hour. Nothing changes. (+5 XP)", xp: 5, damage: 5 },
+                { text: "Pick Sides", type: "lazy", result: "fail", msg: "The war escalates. Data is lost in the crossfire. (+0 XP)", xp: 0, damage: 15 }
+            ]
+        },
 
-        // ZONE: DUNGEON
+        // ZONE: DUNGEON (5 Scenarios)
         {
             zone: 'dungeon',
             title: "The Dungeon of Spare Parts",
@@ -442,6 +466,17 @@
                 { text: "Chart Migration Path", type: "strategy", result: "success", msg: "You create a phased migration. (+27 XP)", xp: 27, damage: 0 },
                 { text: "Patch and Maintain", type: "repair", result: "neutral", msg: "It works for now, but technical debt accumulates. (+13 XP)", xp: 13, damage: 9 },
                 { text: "Ignore Until Failure", type: "lazy", result: "crit_fail", msg: "When it fails, no one knows how to fix it. (+0 XP)", xp: 0, damage: 40 }
+            ]
+        },
+        {
+            zone: 'dungeon',
+            title: "The Vendor's Ransom",
+            text: "The manufacturer says the replacement part has a 52-week lead time.",
+            reflection: "SUPPLY CHAIN: Strategic spares must be identified before failure.",
+            choices: [
+                { text: "Reverse Engineer Part", type: "repair", result: "success", msg: "You create a 3D printed temporary part and order a custom fabrication. (+30 XP)", xp: 30, damage: 0 },
+                { text: "Pay Expedite Fee", type: "plan", result: "neutral", msg: "It costs 10x the price, but arrives in 4 weeks. Downtime hurts. (+10 XP)", xp: 10, damage: 20 },
+                { text: "Wait", type: "lazy", result: "crit_fail", msg: "The plant shuts down for a year. You are fired. (+0 XP)", xp: 0, damage: 100 }
             ]
         }
     ];
@@ -587,11 +622,26 @@
 
     function enterZone(zoneId) {
         playSound('click');
-        state.activeScenarios = SCENARIO_DB.filter(s => s.zone === zoneId);
+        
+        // REPLAYABILITY LOGIC: Shuffle and pick 2
+        const pool = SCENARIO_DB.filter(s => s.zone === zoneId);
+        state.activeScenarios = shuffleArray(pool).slice(0, 2); // Random 2 scenarios per zone
+        
         state.currentScenarioIndex = 0;
         state.currentZoneId = zoneId;
         loadScenario();
         showScreen('game-screen');
+    }
+
+    function shuffleArray(array) {
+        // Fisher-Yates Shuffle for true randomness
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
     }
 
     function enterBossFight() {
