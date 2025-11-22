@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reliability Quest: Inventory Edition</title>
+    <title>Reliability Quest: Dice Edition</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -13,6 +13,7 @@
             --accent-gold: #ffcc00;
             --magic-cyan: #00ffcc;
             --blood-red: #8a0303;
+            --success-green: #2e8b57;
             --font-header: 'Georgia', serif;
             --font-body: 'Courier New', monospace;
         }
@@ -58,6 +59,70 @@
             z-index: 1;
         }
 
+        /* DICE OVERLAY (NEW) */
+        #dice-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--parchment);
+        }
+
+        .d20-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* CSS Hexagon D20 Shape */
+        .d20-die {
+            width: 120px;
+            height: 138px; /* Hexagon ratio roughly 1 : 1.15 */
+            background-color: var(--text-ink);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            font-family: var(--font-header);
+            transition: transform 0.1s;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            border: 4px solid rgba(255,255,255,0.2);
+        }
+
+        /* Animations */
+        .shake { animation: shake-anim 0.5s infinite; }
+        @keyframes shake-anim {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .roll-result-success { background-color: var(--success-green); box-shadow: 0 0 30px var(--success-green); }
+        .roll-result-fail { background-color: #555; box-shadow: 0 0 30px #555; }
+        .roll-result-critfail { background-color: var(--blood-red); box-shadow: 0 0 40px var(--blood-red); }
+        .roll-result-crit { background-color: var(--accent-gold); color: black; box-shadow: 0 0 50px var(--accent-gold); animation: pulse 0.5s infinite; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+
         /* HEADER */
         header {
             background: #2b1d0e;
@@ -68,242 +133,49 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         
-        h1 { 
-            margin: 0; 
-            font-family: var(--font-header); 
-            text-transform: uppercase; 
-            letter-spacing: 3px; 
-            color: var(--accent-gold);
-            text-shadow: 2px 2px 0px #000;
-        }
+        h1 { margin: 0; font-family: var(--font-header); text-transform: uppercase; letter-spacing: 3px; color: var(--accent-gold); text-shadow: 2px 2px 0px #000; }
 
         /* SCREENS */
-        .screen {
-            padding: 2rem;
-            flex: 1;
-            display: none;
-            flex-direction: column;
-            overflow-y: auto;
-        }
+        .screen { padding: 2rem; flex: 1; display: none; flex-direction: column; overflow-y: auto; }
         .screen.active { display: flex; }
 
         /* CLASS SELECTION */
-        .class-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            padding: 1rem;
-        }
-
-        .class-card {
-            background: #e6dabb;
-            border: 2px solid #6e5a3e;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            text-align: center;
-            position: relative;
-        }
-
-        .class-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            border-color: var(--text-ink);
-        }
-
-        .card-image-slot {
-            width: 100%;
-            height: 150px;
-            background: #444;
-            margin-bottom: 10px;
-            border: 2px solid #2b1d0e;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        
-        .card-image-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
+        .class-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; padding: 1rem; }
+        .class-card { background: #e6dabb; border: 2px solid #6e5a3e; padding: 10px; border-radius: 4px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; position: relative; }
+        .class-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); border-color: var(--text-ink); }
+        .card-image-slot { width: 100%; height: 150px; background: #444; margin-bottom: 10px; border: 2px solid #2b1d0e; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .card-image-slot img { width: 100%; height: 100%; object-fit: cover; }
         .card-image-slot.missing-img img { display: none; }
-        .card-image-slot.missing-img::after {
-            content: '⚔️'; 
-            font-size: 3rem;
-        }
-
+        .card-image-slot.missing-img::after { content: '⚔️'; font-size: 3rem; }
         .class-name { font-family: var(--font-header); font-weight: bold; font-size: 1.2rem; border-bottom: 1px solid #6e5a3e; margin-bottom: 5px; padding-bottom: 5px; }
         .class-role { color: #666; font-size: 0.8rem; font-style: italic; }
 
         /* MAP UI */
-        .map-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            padding: 1rem;
-            margin-top: 1rem;
-            align-content: center;
-            height: 100%;
-        }
-
-        .map-zone {
-            background: #2b1d0e; 
-            border: 4px outset #6e5a3e;
-            color: var(--parchment);
-            text-align: center;
-            cursor: pointer;
-            font-family: var(--font-header);
-            position: relative;
-            transition: 0.2s;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end; 
-            align-items: center;
-            min-height: 200px;
-            background-size: cover;
-            background-position: center;
-            overflow: hidden;
-            text-shadow: 2px 2px 4px #000; 
-        }
-        
-        .map-zone-content {
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            width: 100%;
-            padding: 1rem;
-            padding-top: 3rem;
-        }
-
+        .map-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; padding: 1rem; margin-top: 1rem; align-content: center; height: 100%; }
+        .map-zone { background: #2b1d0e; border: 4px outset #6e5a3e; color: var(--parchment); text-align: center; cursor: pointer; font-family: var(--font-header); position: relative; transition: 0.2s; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-height: 200px; background-size: cover; background-position: center; overflow: hidden; text-shadow: 2px 2px 4px #000; }
+        .map-zone-content { background: linear-gradient(transparent, rgba(0,0,0,0.9)); width: 100%; padding: 1rem; padding-top: 3rem; }
         .map-zone:hover { transform: scale(1.03); border-color: var(--accent-gold); }
         .map-zone h3 { margin: 0; color: var(--accent-gold); text-transform: uppercase; font-size: 1.4rem; }
         .map-zone .icon { font-size: 3rem; margin-bottom: 10px; display: none; } 
-
-        /* Fallback for missing zone images */
         .map-zone.missing-zone-img { background: #4a3c2a; justify-content: center; }
         .map-zone.missing-zone-img .icon { display: block; }
         .map-zone.missing-zone-img .map-zone-content { background: none; padding: 1rem; padding-top: 0; }
-
         .map-zone.completed { filter: grayscale(1); opacity: 0.6; border-style: inset; cursor: default; pointer-events: none; }
-        .map-zone.completed::after {
-            content: "CLEARED";
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(-15deg);
-            border: 3px solid var(--magic-cyan);
-            color: var(--magic-cyan);
-            padding: 0.5rem;
-            font-weight: bold;
-            font-size: 1.5rem;
-            text-shadow: 2px 2px 0 #000;
-            background: rgba(0,0,0,0.8);
-            z-index: 10;
-        }
+        .map-zone.completed::after { content: "CLEARED"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); border: 3px solid var(--magic-cyan); color: var(--magic-cyan); padding: 0.5rem; font-weight: bold; font-size: 1.5rem; text-shadow: 2px 2px 0 #000; background: rgba(0,0,0,0.8); z-index: 10; }
 
         /* GAMEPLAY UI & INVENTORY */
-        .hud-bar {
-            display: flex;
-            justify-content: space-between;
-            background: #2b1d0e;
-            color: var(--parchment);
-            padding: 0.5rem 1rem;
-            font-family: var(--font-body);
-            border-bottom: 2px solid #856f48;
-            flex-wrap: wrap;
-        }
-
-        .health-bar-container {
-            width: 100px;
-            height: 15px;
-            background: #440000;
-            border: 1px solid #fff;
-            margin-left: 5px;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .health-fill {
-            height: 100%;
-            background: #ff0000;
-            width: 100%;
-            transition: width 0.5s;
-        }
-
-        /* Inventory Styling */
-        .inventory-box {
-            display: inline-flex;
-            gap: 5px;
-            vertical-align: middle;
-            margin-left: 5px;
-        }
-        .inv-item {
-            font-size: 1.2rem;
-            cursor: help;
-            filter: drop-shadow(0 0 2px gold);
-        }
-
-        .journal-entry {
-            background: rgba(255,255,255,0.4);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--text-ink);
-            font-size: 1.1rem;
-            line-height: 1.5;
-        }
-
-        .reflection-box {
-            background: #2b1d0e;
-            color: var(--accent-gold);
-            padding: 1rem;
-            margin-top: 1rem;
-            border: 2px dashed var(--accent-gold);
-            font-size: 0.9rem;
-            display: none; 
-        }
-
-        .btn-retro {
-            background: #2b1d0e;
-            color: var(--parchment);
-            border: 2px outset #6e5a3e;
-            padding: 1rem;
-            font-family: var(--font-body);
-            font-size: 1rem;
-            cursor: pointer;
-            text-align: left;
-            margin-bottom: 0.5rem;
-            transition: 0.1s;
-            position: relative;
-        }
-
-        .btn-retro:hover:not(:disabled) {
-            background: #4a3c2a;
-            color: var(--magic-cyan);
-            border-style: inset;
-            padding-left: 1.5rem; 
-        }
-
+        .hud-bar { display: flex; justify-content: space-between; background: #2b1d0e; color: var(--parchment); padding: 0.5rem 1rem; font-family: var(--font-body); border-bottom: 2px solid #856f48; flex-wrap: wrap; }
+        .health-bar-container { width: 100px; height: 15px; background: #440000; border: 1px solid #fff; margin-left: 5px; display: inline-block; vertical-align: middle; }
+        .health-fill { height: 100%; background: #ff0000; width: 100%; transition: width 0.5s; }
+        .inventory-box { display: inline-flex; gap: 5px; vertical-align: middle; margin-left: 5px; }
+        .inv-item { font-size: 1.2rem; cursor: help; filter: drop-shadow(0 0 2px gold); }
+        .journal-entry { background: rgba(255,255,255,0.4); padding: 1rem; margin-bottom: 1rem; border-left: 4px solid var(--text-ink); font-size: 1.1rem; line-height: 1.5; }
+        .reflection-box { background: #2b1d0e; color: var(--accent-gold); padding: 1rem; margin-top: 1rem; border: 2px dashed var(--accent-gold); font-size: 0.9rem; display: none; }
+        .btn-retro { background: #2b1d0e; color: var(--parchment); border: 2px outset #6e5a3e; padding: 1rem; font-family: var(--font-body); font-size: 1rem; cursor: pointer; text-align: left; margin-bottom: 0.5rem; transition: 0.1s; position: relative; }
+        .btn-retro:hover:not(:disabled) { background: #4a3c2a; color: var(--magic-cyan); border-style: inset; padding-left: 1.5rem; }
         .btn-retro:active:not(:disabled) { border-style: inset; transform: translateY(2px); }
-        
-        .btn-retro:disabled { 
-            opacity: 0.5; 
-            cursor: not-allowed; 
-            filter: grayscale(1); 
-            border-color: #444;
-            color: #888;
-        }
-
-        .sfx-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            cursor: pointer;
-            font-size: 0.8rem;
-            padding: 5px;
-        }
+        .btn-retro:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); border-color: #444; color: #888; }
+        .sfx-toggle { position: absolute; top: 15px; right: 15px; background: none; border: 1px solid var(--accent-gold); color: var(--accent-gold); cursor: pointer; font-size: 0.8rem; padding: 5px; }
 
         @media (max-width: 600px) {
             .game-container { height: 100vh; border: none; }
@@ -320,6 +192,14 @@
         <div style="font-size: 0.8rem; opacity: 0.8;">The Legend of Uptime</div>
         <button class="sfx-toggle" id="sfx-btn" onclick="toggleAudio()">🔊 SFX: ON</button>
     </header>
+
+    <!-- DICE OVERLAY -->
+    <div id="dice-overlay">
+        <div class="d20-container">
+            <div id="d20-die" class="d20-die">20</div>
+        </div>
+        <h2 id="roll-text" style="margin-top: 20px; text-transform: uppercase; letter-spacing: 2px;">Rolling...</h2>
+    </div>
 
     <!-- 1. CLASS SELECTION -->
     <div id="start-screen" class="screen active">
@@ -395,6 +275,8 @@
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.linearRampToValueAtTime(50, now + 0.3); gain.gain.setValueAtTime(0.2, now); osc.start(now); osc.stop(now + 0.3);
         } else if (type === 'loot') {
             osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.2); gain.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.2);
+        } else if (type === 'rolling') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(50, now); osc.frequency.linearRampToValueAtTime(20, now + 1.0); gain.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 1.0);
         }
     }
 
@@ -413,7 +295,6 @@
         { id: 'dungeon', name: 'Dungeon of Inventory', icon: '📦', img: 'img/dungeon.png' }
     ];
 
-    /* --- INVENTORY DEFINITIONS --- */
     const TOOLS = {
         irScanner: { name: "IR Scanner", icon: "🔦" },
         spareSeal: { name: "Spare Seal", icon: "⭕" },
@@ -423,7 +304,6 @@
     };
 
     /* --- SCENARIO DATABASE --- */
-    // Updated with REWARDS and REQUIREMENTS
     const SCENARIO_DB = [
         // ZONE: PLANT
         {
@@ -597,7 +477,10 @@
         controls: document.getElementById('controls-area'),
         hpBar: document.getElementById('hp-bar'),
         xpDisplay: document.getElementById('xp-display'),
-        invDisplay: document.getElementById('inventory-display')
+        invDisplay: document.getElementById('inventory-display'),
+        diceOverlay: document.getElementById('dice-overlay'),
+        d20: document.getElementById('d20-die'),
+        rollText: document.getElementById('roll-text')
     };
 
     function init() { renderClasses(); }
@@ -761,7 +644,7 @@
                 btn.innerHTML = `🔒 ${choice.text} <span style="font-size:0.8em; color:#888">(Requires ${TOOLS[choice.requires].name})</span>`;
             } else {
                 btn.innerHTML = `👉 ${choice.text} ${bonusText}`;
-                btn.onclick = () => resolveTurn(choice);
+                btn.onclick = () => initiateRoll(choice); // START ROLL
                 btn.onmouseenter = () => playSound('hover');
             }
 
@@ -769,9 +652,62 @@
         });
     }
 
-    function resolveTurn(choice) {
+    /* --- DICE ANIMATION LOGIC --- */
+    function initiateRoll(choice) {
         playSound('click');
         ui.controls.style.display = 'none';
+        
+        // Show Overlay
+        ui.diceOverlay.style.display = 'flex';
+        ui.d20.classList.add('shake');
+        ui.d20.className = 'd20-die shake'; // Reset style
+        ui.rollText.innerText = "Rolling...";
+        playSound('rolling');
+
+        let counter = 0;
+        let rollInterval = setInterval(() => {
+            ui.d20.innerText = Math.floor(Math.random() * 20) + 1;
+            counter++;
+            if (counter > 10) {
+                clearInterval(rollInterval);
+                finishRoll(choice);
+            }
+        }, 100);
+    }
+
+    function finishRoll(choice) {
+        ui.d20.classList.remove('shake');
+        let finalRoll = 0;
+
+        // Determine "Visual" Roll based on outcome type
+        if (choice.result === 'success') {
+            finalRoll = 12 + Math.floor(Math.random() * 8); // 12-19
+            if(Math.random() > 0.8) finalRoll = 20; // 20% chance of Crit visually
+            ui.d20.classList.add('roll-result-success');
+            if(finalRoll === 20) ui.d20.classList.add('roll-result-crit');
+        } else if (choice.result === 'neutral') {
+            finalRoll = 8 + Math.floor(Math.random() * 4); // 8-11
+            ui.d20.classList.add('roll-result-fail');
+        } else if (choice.result === 'fail') {
+            finalRoll = 2 + Math.floor(Math.random() * 6); // 2-7
+            ui.d20.classList.add('roll-result-fail');
+        } else { // Crit Fail
+            finalRoll = 1;
+            ui.d20.classList.add('roll-result-critfail');
+        }
+
+        ui.d20.innerText = finalRoll;
+        ui.rollText.innerText = finalRoll >= 12 ? "SUCCESS!" : "FAILURE...";
+        
+        if (finalRoll >= 12) playSound('success'); else playSound('fail');
+
+        setTimeout(() => {
+            ui.diceOverlay.style.display = 'none';
+            resolveTurn(choice, finalRoll);
+        }, 1500);
+    }
+
+    function resolveTurn(choice, rollValue) {
         state.xp += choice.xp;
         state.hp -= choice.damage;
         
@@ -784,15 +720,13 @@
 
         updateStats();
 
-        if (choice.damage > 0) playSound('fail');
-        else playSound('success');
-
         const log = document.getElementById('result-log');
         let color = choice.damage > 0 ? 'var(--blood-red)' : 'var(--magic-cyan)';
         
+        let rollMsg = `<span style="color:#888; font-size:0.8em">[Rolled: ${rollValue}]</span> `;
         let rewardMsg = choice.reward ? `<br><br><span style="color:gold">✨ ACQUIRED: ${TOOLS[choice.reward].name}</span>` : '';
 
-        log.innerHTML = `<p style="color:${color}; font-weight:bold; margin-top:1rem;">> ${choice.msg}${rewardMsg}</p>`;
+        log.innerHTML = `<p style="color:${color}; font-weight:bold; margin-top:1rem;">${rollMsg} > ${choice.msg}${rewardMsg}</p>`;
 
         document.getElementById('reflection-panel').style.display = 'block';
     }
